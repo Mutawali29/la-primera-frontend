@@ -1,4 +1,4 @@
-// src/data/products.js
+// src/components/shop/data/products.jsx
 
 // Aset gambar diimpor di sini dan diteruskan bersama data
 // import f1 from '../../src/assets/img/products/f1.jpg';

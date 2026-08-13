@@ -18,7 +18,8 @@ import Shop from './pages/Shop';
 // Import Halaman Autentikasi yang sudah ada dari kode asli Anda
 import Login from './pages/Login';
 import Register from './pages/Register';
-// >>> CATATAN: ForgotPassword dan ResetPassword DIHAPUS SESUAI INSTRUKSI ANDA <<<
+import VerifyOtp from './pages/VerifyOtp';
+// >>> CATATAN: ForgotPassword dan ResetPassword DIHAPUS SESUAI INSTRUKSI ANDA <
 // import ForgotPassword from './pages/Auth/ForgotPassword';
 // import ResetPassword from './pages/Auth/ResetPassword';
 
@@ -94,6 +95,7 @@ function App() {
                     {/* Rute Autentikasi */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/verify-otp" element={<VerifyOtp />} />
                     {/* >>> CATATAN: Rute ForgotPassword dan ResetPassword DIHAPUS <<< */}
                     {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
                     {/* <Route path="/reset-password" element={<ResetPassword />} /> */}

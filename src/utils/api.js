@@ -63,6 +63,22 @@ export const authAPI = {
             throw error.response?.data || { message: error.message };
         }
     },
+    verifyOtp: async (payload) => {
+        try {
+            const response = await api.post('/verify-otp', payload);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: error.message };
+        }
+    },
+    resendOtp: async (payload) => {
+        try {
+            const response = await api.post('/resend-otp', payload);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: error.message };
+        }
+    },
     logout: async () => {
         try {
             const response = await api.post('/logout');

@@ -1,210 +1,253 @@
-import { useState } from 'react';
-import BlogCard from '../components/blog/BlogCard';
-import BlogList from '../components/blog/BlogList';
+import { useState, useRef, useLayoutEffect } from 'react';
+import { ArrowRight, Calendar, User } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useLanguage } from '../context/LanguageContext';
+import CategoryFilter from '../components/shop/CategoryFilter';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Foto desain asli hoodie LPRM — depan (logo) & belakang (rasi bintang "Never Lost Hope")
+import lprmFront from '../assets/img/blog/lprm-front.png';
+import lprmBack from '../assets/img/blog/lprm-back.png';
 
 function Blog() {
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6;
+
+  const heroRef = useRef(null);
+  const heroTitleRef = useRef(null);
+  const heroSubtitleRef = useRef(null);
+  const gridRef = useRef(null);
+  const cardRefs = useRef([]);
+  const imageRefs = useRef([]);
+  const newsletterRef = useRef(null);
+
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const categories = [
-    { id: 'all', name: 'Semua Artikel' },
-    { id: 'fashion', name: 'Fashion' },
-    { id: 'trends', name: 'Trend Terbaru' },
-    { id: 'tips', name: 'Tips & Tricks' },
-    { id: 'lifestyle', name: 'Lifestyle' }
+    { id: 'all', name: t('blog.categories.all') },
+    { id: 'hoodie', name: t('blog.categories.hoodie') },
+    { id: 'tshirt', name: t('blog.categories.tshirt') },
   ];
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: '10 Trend Fashion 2025 yang Wajib Kamu Ketahui',
-      category: 'fashion',
-      excerpt: 'Temukan trend fashion terbaru yang akan mendominasi tahun 2025. Dari warna-warna bold hingga siluet yang unik, pastikan style kamu selalu up to date.',
-      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Sarah Johnson',
-      date: '28 Juni 2025',
-      readTime: '5 min read',
-      tags: ['Fashion', 'Trend', '2025'],
-      isFeatured: true
-    },
-    {
-      id: 2,
-      title: 'Cara Mix and Match Outfit untuk Tampilan Profesional',
-      category: 'tips',
-      excerpt: 'Pelajari seni menggabungkan berbagai pieces dalam lemari pakaian untuk menciptakan look profesional yang tetap stylish dan nyaman.',
-      image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Michael Chen',
-      date: '26 Juni 2025',
-      readTime: '7 min read',
-      tags: ['Tips', 'Professional', 'Mix Match']
-    },
-    {
-      id: 3,
-      title: 'Sustainable Fashion: Investasi untuk Masa Depan',
-      category: 'lifestyle',
-      excerpt: 'Mengapa memilih fashion berkelanjutan bukan hanya baik untuk lingkungan, tetapi juga untuk gaya hidup dan keuangan jangka panjang.',
-      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Emma Wilson',
-      date: '24 Juni 2025',
-      readTime: '6 min read',
-      tags: ['Sustainable', 'Environment', 'Investment']
-    },
-    {
-      id: 4,
-      title: 'Aksesori yang Bisa Mengubah Total Look Kamu',
-      category: 'fashion',
-      excerpt: 'Discover how the right accessories can completely transform your outfit from basic to extraordinary with these simple styling tricks.',
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'David Rodriguez',
-      date: '22 Juni 2025',
-      readTime: '4 min read',
-      tags: ['Accessories', 'Styling', 'Transform']
-    },
-    {
-      id: 5,
-      title: 'Color Psychology dalam Fashion: Warna yang Tepat untuk Mood',
-      category: 'trends',
-      excerpt: 'Bagaimana warna pakaian dapat mempengaruhi mood dan persepsi orang lain terhadap kita. Panduan lengkap memilih warna yang tepat.',
-      image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Jessica Lee',
-      date: '20 Juni 2025',
-      readTime: '8 min read',
-      tags: ['Psychology', 'Color', 'Mood']
-    },
-    {
-      id: 6,
-      title: 'Essential Wardrobe: 20 Item yang Harus Ada di Lemari',
-      category: 'tips',
-      excerpt: 'Daftar lengkap essential items yang harus dimiliki setiap orang untuk membangun wardrobe yang versatile dan timeless.',
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Alex Thompson',
-      date: '18 Juni 2025',
-      readTime: '10 min read',
-      tags: ['Essential', 'Wardrobe', 'Basics']
-    },
-    {
-      id: 7,
-      title: 'Street Style Inspiration dari Fashion Week Terbaru',
-      category: 'trends',
-      excerpt: 'Inspirasi street style terbaik dari berbagai fashion week dunia yang bisa kamu adaptasi untuk gaya sehari-hari.',
-      image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Sophie Martin',
-      date: '16 Juni 2025',
-      readTime: '6 min read',
-      tags: ['Street Style', 'Fashion Week', 'Inspiration']
-    },
-    {
-      id: 8,
-      title: 'Merawat Pakaian Agar Awet dan Tetap Terlihat Baru',
-      category: 'tips',
-      excerpt: 'Tips praktis merawat berbagai jenis kain dan pakaian agar investasi fashion kamu bisa bertahan lama dan selalu terlihat prima.',
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'Rachel Green',
-      date: '14 Juni 2025',
-      readTime: '5 min read',
-      tags: ['Care', 'Maintenance', 'Tips']
-    },
-    {
-      id: 9,
-      title: 'Capsule Wardrobe: Minimalis tapi Maksimal',
-      category: 'lifestyle',
-      excerpt: 'Konsep capsule wardrobe untuk hidup yang lebih simple namun tetap stylish. Panduan membangun wardrobe minimalis yang efektif.',
-      image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      author: 'James Wilson',
-      date: '12 Juni 2025',
-      readTime: '7 min read',
-      tags: ['Capsule', 'Minimalist', 'Efficient']
+  const posts = [
+    { id: 'lprm-story', category: 'hoodie', image: lprmFront, titleKey: 'lprmStory' },
+    { id: 'size-guide', category: 'hoodie', image: lprmBack, titleKey: 'sizeGuide' },
+  ];
+
+  const filteredPosts = activeCategory === 'all'
+    ? posts
+    : posts.filter((post) => post.category === activeCategory);
+
+  // Hero intro — fade + slide-up saat pertama render
+  useLayoutEffect(() => {
+    if (prefersReducedMotion) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        [heroTitleRef.current, heroSubtitleRef.current],
+        { y: 28, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', stagger: 0.12 }
+      );
+    }, heroRef);
+    return () => ctx.revert();
+  }, [prefersReducedMotion]);
+
+  // Scroll reveal untuk card artikel — stagger, retrigger tiap kali daftar berubah (filter kategori)
+  useLayoutEffect(() => {
+    if (prefersReducedMotion) {
+      cardRefs.current.forEach((el) => el && gsap.set(el, { opacity: 1, y: 0 }));
+      return;
     }
-  ];
 
-  const filteredPosts = activeCategory === 'all' 
-    ? blogPosts 
-    : blogPosts.filter(post => post.category === activeCategory);
+    const cards = cardRefs.current.filter(Boolean);
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        cards,
+        { y: 48, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: 'power3.out',
+          stagger: 0.12,
+          scrollTrigger: { trigger: gridRef.current, start: 'top 82%' },
+        }
+      );
+    }, gridRef);
 
-  const featuredPost = blogPosts.find(post => post.isFeatured);
-  const regularPosts = filteredPosts.filter(post => !post.isFeatured);
+    return () => ctx.revert();
+  }, [activeCategory, prefersReducedMotion]);
 
-  // Pagination logic
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = regularPosts.slice(indexOfFirstPost, indexOfFirstPost + postsPerPage);
-  const totalPages = Math.ceil(regularPosts.length / postsPerPage);
+  // Newsletter card — scale + fade saat masuk viewport
+  useLayoutEffect(() => {
+    if (prefersReducedMotion) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        newsletterRef.current,
+        { y: 32, opacity: 0, scale: 0.98 },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: newsletterRef.current, start: 'top 88%' },
+        }
+      );
+    });
+    return () => ctx.revert();
+  }, [prefersReducedMotion]);
 
-  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+  // Parallax halus gambar saat hover per-card
+  const handleCardMouseMove = (index) => (e) => {
+    if (prefersReducedMotion) return;
+    const img = imageRefs.current[index];
+    if (!img) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width - 0.5;
+    const relY = (e.clientY - rect.top) / rect.height - 0.5;
+    gsap.to(img, { x: relX * 14, y: relY * 10, duration: 0.6, ease: 'power2.out' });
+  };
+
+  const handleCardMouseLeave = (index) => () => {
+    if (prefersReducedMotion) return;
+    const img = imageRefs.current[index];
+    if (!img) return;
+    gsap.to(img, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-600 to-red-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Hero */}
+      <section ref={heroRef} className="relative bg-gradient-to-r from-red-600 to-red-800 text-white pt-20 pb-28 lg:pb-32 rounded-b-[2.5rem] lg:rounded-b-[3.5rem] overflow-hidden">
+        {/* Dekorasi glow — konsisten dengan aksen radial di ExploreCollections */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-20"
+          style={{ background: 'radial-gradient(circle, #fecaca 0%, transparent 70%)' }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 -left-20 w-[320px] h-[320px] rounded-full blur-3xl opacity-10"
+          style={{ background: 'radial-gradient(circle, #ffffff 0%, transparent 70%)' }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Fashion <span className="text-red-200">Blog</span>
+            <h1 ref={heroTitleRef} className="text-5xl md:text-6xl font-bold mb-6">
+              {t('blog.hero.title')} <span className="text-red-200">{t('blog.hero.titleHighlight')}</span>
             </h1>
-            <p className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed">
-              Temukan inspirasi fashion terbaru, tips styling, dan insight dari dunia mode untuk mengekspresikan kepribadian unik Anda
+            <p ref={heroSubtitleRef} className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed text-red-50">
+              {t('blog.hero.subtitle')}
             </p>
           </div>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Featured Article */}
-        {featuredPost && activeCategory === 'all' && (
-          <section className="mb-16">
-            <BlogCard post={featuredPost} isFeatured={true} />
-          </section>
-        )}
-
-        {/* Category Filter */}
-        <section className="mb-12">
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => {
-                  setActiveCategory(category.id);
-                  setCurrentPage(1);
-                }}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
-                  activeCategory === category.id
-                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Blog List with Pagination */}
-        <BlogList 
-          posts={currentPosts}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-
-        {/* Newsletter Subscription */}
-        <section className="mt-20 bg-gradient-to-r from-red-600 to-red-800 rounded-3xl p-8 md:p-12 text-center text-white">
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">
-            Jangan Lewatkan Update Terbaru!
-          </h3>
-          <p className="text-xl mb-8 text-red-100">
-            Subscribe newsletter kami untuk mendapatkan artikel fashion terbaru dan tips styling eksklusif
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Masukkan email Anda"
-              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none focus:ring-4 focus:ring-red-300"
+        {/* Filter kategori — jarak dari hero dikurangi supaya tidak terlalu menjorok ke atas */}
+        <div className="relative z-10 -mt-8 lg:-mt-10 mb-12">
+          <div className="max-w-fit mx-auto bg-white dark:bg-gray-800 rounded-full p-2 shadow-xl dark:shadow-black/40 ring-1 ring-gray-900/5 dark:ring-white/10">
+            <CategoryFilter
+              categories={categories}
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+              className=""
             />
-            <button className="bg-white text-red-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors duration-300 whitespace-nowrap">
-              Subscribe
-            </button>
           </div>
+        </div>
+
+        {/* Grid artikel */}
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {filteredPosts.map((post, index) => {
+            const title = t(`blog.posts.${post.titleKey}.title`);
+            const excerpt = t(`blog.posts.${post.titleKey}.excerpt`);
+            const author = t(`blog.posts.${post.titleKey}.author`);
+            const date = t(`blog.posts.${post.titleKey}.date`);
+
+            return (
+              <article
+                key={post.id}
+                ref={(el) => (cardRefs.current[index] = el)}
+                onMouseMove={handleCardMouseMove(index)}
+                onMouseLeave={handleCardMouseLeave(index)}
+                className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-md dark:shadow-black/30 ring-1 ring-gray-900/5 dark:ring-white/10 hover:shadow-2xl dark:hover:shadow-black/50 transition-shadow duration-300"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-700">
+                  <img
+                    ref={(el) => (imageRefs.current[index] = el)}
+                    src={post.image}
+                    alt={title}
+                    loading="lazy"
+                    className="w-full h-full object-contain p-6 will-change-transform"
+                  />
+                </div>
+
+                <div className="p-6 sm:p-7">
+                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    <span className="flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5" strokeWidth={2} />
+                      {author}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
+                      {date}
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
+                    {title}
+                  </h2>
+
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-5">
+                    {excerpt}
+                  </p>
+
+                  <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:gap-2.5 transition-[gap] duration-200 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm">
+                    {t('blog.meta.readMore')}
+                    <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* Newsletter */}
+        <section
+          ref={newsletterRef}
+          className="mt-20 bg-gradient-to-r from-red-600 to-red-800 rounded-3xl p-8 md:p-12 text-center text-white"
+        >
+          <h3 className="text-3xl md:text-4xl font-bold mb-4">
+            {t('blog.newsletter.title')}
+          </h3>
+          <p className="text-lg mb-8 text-red-100 max-w-xl mx-auto">
+            {t('blog.newsletter.subtitle')}
+          </p>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+          >
+            <label htmlFor="newsletter-email" className="sr-only">
+              {t('blog.newsletter.placeholder')}
+            </label>
+            <input
+              id="newsletter-email"
+              type="email"
+              required
+              placeholder={t('blog.newsletter.placeholder')}
+              className="flex-1 px-6 py-3 rounded-full text-gray-900 bg-white outline-none focus:ring-4 focus:ring-red-300"
+            />
+            <button
+              type="submit"
+              className="bg-white text-red-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 whitespace-nowrap outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {t('blog.newsletter.button')}
+            </button>
+          </form>
         </section>
       </div>
     </div>

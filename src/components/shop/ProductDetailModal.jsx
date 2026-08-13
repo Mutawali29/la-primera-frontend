@@ -1,7 +1,16 @@
-// src/components/shop/ProductDetailModal.jsx 
+// src/components/shop/ProductDetailModal.jsx
 import { useState, useEffect } from 'react';
 import { formatPrice } from './utils/Formatters';
 import RatingStars from './RatingStars';
+
+// TODO: pindahkan ke file config/env terpusat (misal import.meta.env.VITE_API_URL)
+// kalau nanti sudah punya file itu, ganti baris ini dan hapus definisi lokal di bawah.
+const API_BASE_URL = 'http://127.0.0.1:8000';
+
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/placeholder-image.jpg';
+    return `${API_BASE_URL}${imagePath}`;
+};
 
 const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showNotification }) => {
     if (!product) return null;
@@ -169,7 +178,7 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
                         <div className="space-y-4">
                             <div className="relative overflow-hidden rounded-xl">
                                 <img 
-                                    src={initialImages[activeImageIndex]?.image_path || '/placeholder-image.jpg'} 
+                                    src={getImageUrl(initialImages[activeImageIndex]?.image_path)} 
                                     alt={getProductName(product)} 
                                     className="w-full h-96 object-cover"
                                     onError={(e) => {
@@ -188,7 +197,7 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
                                             }`}
                                         >
                                             <img 
-                                                src={image.image_path || '/placeholder-image.jpg'} 
+                                                src={getImageUrl(image.image_path)} 
                                                 alt={`${getProductName(product)} ${index + 1}`} 
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {

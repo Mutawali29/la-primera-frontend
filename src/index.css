@@ -20,3 +20,7 @@
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+body {
+  @apply bg-white dark:bg-gray-900 transition-colors duration-0;
+}

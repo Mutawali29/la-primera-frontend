@@ -1,4 +1,4 @@
-// src/hooks/useAuth.jsx 
+// src/hooks/useAuth.jsx
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../utils/api';
@@ -78,21 +78,15 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Fungsi register (sama seperti login dalam hal penanganan token dan user)
+    // Fungsi register — TIDAK langsung login. User harus verifikasi OTP dulu
+    // sebelum token diberikan. Response cuma berisi konfirmasi + email untuk
+    // dibawa ke halaman verifikasi OTP.
     const register = async (userData) => {
         setLoading(true);
         try {
             const response = await authAPI.register(userData);
-            if (response.success && response.data) {
-                const newUser = response.data.user;
-                const newToken = response.data.access_token;
-
-                setUser(newUser);
-                setToken(newToken);
-                localStorage.setItem('token', newToken);
-                localStorage.setItem('user', JSON.stringify(newUser));
-
-                return { success: true };
+            if (response.success) {
+                return { success: true, email: userData.email, requiresOtp: true };
             }
             throw new Error(response.message || 'Registration failed: Invalid response from server.');
         } catch (error) {
@@ -100,6 +94,43 @@ export const AuthProvider = ({ children }) => {
             throw error;
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Verifikasi kode OTP — setelah sukses, baru user resmi login (dapat token)
+    const verifyOtp = async (email, otpCode) => {
+        setLoading(true);
+        try {
+            const response = await authAPI.verifyOtp({ email, otp_code: otpCode });
+            if (response.success && response.data) {
+                const verifiedUser = response.data.user;
+                const verifiedToken = response.data.access_token;
+
+                setUser(verifiedUser);
+                setToken(verifiedToken);
+                localStorage.setItem('token', verifiedToken);
+                localStorage.setItem('user', JSON.stringify(verifiedUser));
+
+                return { success: true };
+            }
+            throw new Error(response.message || 'OTP verification failed.');
+        } catch (error) {
+            console.error('OTP verification error:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Kirim ulang kode OTP — tidak mengubah state loading global,
+    // supaya UI form OTP bisa punya loading state sendiri untuk tombol resend.
+    const resendOtp = async (email) => {
+        try {
+            const response = await authAPI.resendOtp({ email });
+            return { success: true, message: response.message };
+        } catch (error) {
+            console.error('Resend OTP error:', error);
+            throw error;
         }
     };
     
@@ -194,6 +225,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token && !!user, // User dianggap terautentikasi jika ada token DAN data user
         login, 
         register, 
+        verifyOtp,
+        resendOtp,
         logout, 
         requestPasswordReset,
         updateProfile,

@@ -4,6 +4,7 @@ import { useProduct } from '../hooks/useProduct';
 import { useWishlist } from '../hooks/useWishlist';
 import { useCart } from '../hooks/useCart';
 import { productAPI } from '../utils/api'; // Import API untuk fetch detail
+import { useLanguage } from '../context/LanguageContext';
 
 import CategoryFilter from '../components/shop/CategoryFilter';
 import ProductGrid from '../components/shop/ProductGrid';
@@ -11,6 +12,7 @@ import ProductDetailModal from '../components/shop/ProductDetailModal';
 import ToastNotification from '../components/common/ToastNotification';
 
 function Shop() {
+  const { t } = useLanguage();
   const { products, categories, loading, error, activeCategory, setActiveCategory } = useProduct();
   const { wishlistIds, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart, isAdding } = useCart();
@@ -39,7 +41,7 @@ function Shop() {
 
   // Helper function untuk mendapatkan nama produk
   const getProductName = (product) => {
-    return product?.name || product?.title || product?.productName || 'Produk';
+    return product?.name || product?.title || product?.productName || t('shop.page.defaultProductName');
   };
 
   // Handler konsisten untuk addToCart dari ProductGrid (quick add)
@@ -47,9 +49,9 @@ function Shop() {
     try {
       await addToCart(product, quantity);
       const productName = getProductName(product);
-      showNotification(`${productName} berhasil ditambahkan ke keranjang!`, 'success');
+      showNotification(`${productName} ${t('shop.page.addToCartSuccess')}`, 'success');
     } catch (error) {
-      showNotification(error.message || 'Gagal menambahkan produk ke keranjang', 'error');
+      showNotification(error.message || t('shop.page.addToCartError'), 'error');
     }
   };
 
@@ -69,18 +71,18 @@ function Shop() {
     try {
       await addToWishlist(product);
       const productName = getProductName(product);
-      showNotification(`${productName} ditambahkan ke wishlist!`, 'success');
+      showNotification(`${productName} ${t('shop.page.wishlistAddSuccess')}`, 'success');
     } catch (error) {
-      showNotification(error.message || 'Gagal menambahkan ke wishlist', 'error');
+      showNotification(error.message || t('shop.page.wishlistAddError'), 'error');
     }
   };
 
   const handleRemoveFromWishlist = async (productId) => {
     try {
       await removeFromWishlist(productId);
-      showNotification('Produk dihapus dari wishlist', 'success');
+      showNotification(t('shop.page.wishlistRemoveSuccess'), 'success');
     } catch (error) {
-      showNotification(error.message || 'Gagal menghapus dari wishlist', 'error');
+      showNotification(error.message || t('shop.page.wishlistRemoveError'), 'error');
     }
   };
 
@@ -107,7 +109,7 @@ function Shop() {
       
     } catch (error) {
       console.error('Error fetching product detail:', error);
-      showNotification('Gagal memuat detail produk', 'error');
+      showNotification(t('shop.page.detailFetchError'), 'error');
       setSelectedProduct(null);
     } finally {
       setIsLoadingProductDetail(false);
@@ -119,23 +121,23 @@ function Shop() {
   };
 
   if (loading) {
-    return <div className="text-center py-20 text-xl">Memuat produk... ⏳</div>;
+    return <div className="text-center py-20 text-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">{t('shop.page.loading')} ⏳</div>;
   }
 
   if (error) {
-    return <div className="text-center py-20 text-xl text-red-600">Error: {error} 😥</div>;
+    return <div className="text-center py-20 text-xl bg-gray-50 dark:bg-gray-900 text-red-600 dark:text-red-400">{t('shop.page.errorPrefix')}: {error} 😥</div>;
   }
 
   return (
     <>
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Produk <span className="text-red-600">Unggulan</span>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('shop.page.title')} <span className="text-red-600 dark:text-red-400">{t('shop.page.titleHighlight')}</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Koleksi terpilih dengan kualitas premium dan desain terdepan.
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              {t('shop.page.subtitle')}
             </p>
           </div>
 
@@ -154,8 +156,8 @@ function Shop() {
           />
 
           <div className="text-center mt-12">
-            <button className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-gray-800 transition-colors duration-300 transform hover:scale-105 shadow-lg">
-              Lihat Semua Produk
+            <button className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 px-8 py-4 rounded-full font-medium hover:bg-gray-100 dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white transition-colors duration-300 transform hover:scale-105 shadow-lg dark:shadow-black/30">
+              {t('shop.page.viewAll')}
             </button>
           </div>
         </div>
@@ -164,9 +166,9 @@ function Shop() {
       {/* FIXED: Show loading state when fetching product detail */}
       {isLoadingProductDetail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 flex items-center gap-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600"></div>
-            <span className="text-gray-700">Memuat detail produk...</span>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 dark:border-red-400"></div>
+            <span className="text-gray-700 dark:text-gray-200">{t('shop.page.loadingDetail')}</span>
           </div>
         </div>
       )}
