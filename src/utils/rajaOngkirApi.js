@@ -1,5 +1,6 @@
 // src/utils/rajaOngkirApi.js - PERBAIKAN dengan abort controller dan cache
-const API_BASE_URL = 'http://localhost:8000/api'; 
+// const API_BASE_URL = 'http://localhost:8000/api'; 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 class RajaOngkirAPI {
     constructor() {
@@ -45,7 +46,7 @@ class RajaOngkirAPI {
                 } else if (response.status === 500) {
                     throw new Error('Laravel server error. Check Laravel logs.');
                 } else if (response.status === 0 || !response.status) {
-                    throw new Error('Tidak dapat terhubung ke Laravel server. Pastikan server berjalan di http://localhost:8000');
+                    throw new Error('Tidak dapat terhubung ke server. Periksa koneksi API Anda.');
                 }
                 
                 const errorText = await response.text();
