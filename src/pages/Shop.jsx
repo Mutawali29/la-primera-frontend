@@ -96,15 +96,12 @@ function Shop() {
   const openProductDetail = async (product) => {
     try {
       setIsLoadingProductDetail(true);
-      console.log('Opening product detail for:', product);
-      
+
       // Fetch detailed product data with size_variants and images
       const response = await productAPI.getProduct(product.id);
-      console.log('Fetched product detail:', response);
-      
+
       const detailProduct = response.data || response;
-      console.log('Setting selected product:', detailProduct);
-      
+
       setSelectedProduct(detailProduct);
       
     } catch (error) {
