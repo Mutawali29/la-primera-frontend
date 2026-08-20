@@ -5,9 +5,19 @@ import { formatPrice } from '../../components/shop/utils/Formatters';
 import RatingStars from './RatingStars';
 import { useLanguage } from '../../context/LanguageContext';
 
-// TODO: pindahkan ke file config/env terpusat (misal import.meta.env.VITE_API_URL)
-// kalau nanti sudah punya file itu, ganti baris ini dan hapus definisi lokal di bawah.
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// Base URL API, diambil dari environment variable Vite.
+// Fallback ke localhost untuk development kalau env var belum di-set.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // Backend sudah mengembalikan URL lengkap (dari Supabase Storage) untuk
+    // sebagian data, jadi jangan digabung lagi dengan API_BASE_URL.
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+    return `${API_BASE_URL}${imagePath}`;
+};
 
 const ProductCard = ({ product, onOpenDetail, wishlistIds, addToWishlist, removeFromWishlist }) => {
   const { t } = useLanguage();
@@ -17,9 +27,8 @@ const ProductCard = ({ product, onOpenDetail, wishlistIds, addToWishlist, remove
 
   // Ambil gambar primary (is_primary: true), fallback ke gambar pertama kalau tidak ada yang primary
   const primaryImage = product.images?.find((img) => img.is_primary) || product.images?.[0];
-  const imageSrc = primaryImage
-    ? `${API_BASE_URL}${primaryImage.image_path}`
-    : 'https://via.placeholder.com/400x400.png/f3f4f6/9ca3af?text=Image';
+  const imageSrc = getImageUrl(primaryImage?.image_path)
+    || 'https://via.placeholder.com/400x400.png/f3f4f6/9ca3af?text=Image';
 
   const hasDiscount = product.compare_price > product.price;
   const discountPercent = hasDiscount

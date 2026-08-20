@@ -9,6 +9,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 const getImageUrl = (imagePath) => {
     if (!imagePath) return '/placeholder-image.jpg';
+    // Backend sudah mengembalikan URL lengkap (dari Supabase Storage) untuk
+    // sebagian data, jadi jangan digabung lagi dengan API_BASE_URL.
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
     return `${API_BASE_URL}${imagePath}`;
 };
 
