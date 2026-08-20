@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { formatPrice } from './utils/Formatters';
 import RatingStars from './RatingStars';
 
-// TODO: pindahkan ke file config/env terpusat (misal import.meta.env.VITE_API_URL)
-// kalau nanti sudah punya file itu, ganti baris ini dan hapus definisi lokal di bawah.
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// Base URL API, diambil dari environment variable Vite.
+// Fallback ke localhost untuk development kalau env var belum di-set.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 const getImageUrl = (imagePath) => {
     if (!imagePath) return '/placeholder-image.jpg';
@@ -19,10 +19,6 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
     const sizeVariants = product.size_variants || [];
     const productColors = product.colors || '';
     const initialImages = product.images || [];
-
-    // Debug: Log the received product data
-    console.log('Product received:', product);
-    console.log('Size variants from product:', sizeVariants);
 
     // FIXED: Check if size_variants exists and has data
     if (!sizeVariants || sizeVariants.length === 0) {
@@ -51,9 +47,6 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
     // FIXED: Get available sizes from database data
     const availableSizes = actualSizeVariants.map(variant => variant.size);
 
-    console.log('Using size variants:', actualSizeVariants);
-    console.log('Available sizes:', availableSizes);
-
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -61,8 +54,6 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
     
     // Reset state when product changes
     useEffect(() => {
-        console.log('Product changed, resetting state. Product:', product);
-        console.log('Size variants:', actualSizeVariants);
         setSelectedSize('');
         setQuantity(1);
         setActiveImageIndex(0);
@@ -71,19 +62,14 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
 
     // FIXED: Handle size selection and update stock info
     const handleSizeSelection = (size) => {
-        console.log('Size selected:', size);
-        console.log('Available size variants:', actualSizeVariants);
-        
         setSelectedSize(size);
         setQuantity(1); // Reset quantity when size changes
         
         // FIXED: Find stock for selected size - make sure we're looking at the right property
         const sizeVariant = actualSizeVariants.find(variant => variant.size === size);
-        console.log('Found size variant:', sizeVariant);
         
         // FIXED: Access stock_quantity properly
         const stockForSize = sizeVariant ? parseInt(sizeVariant.stock_quantity) : 0;
-        console.log('Stock for size', size, ':', stockForSize);
         
         setSelectedSizeStock(stockForSize);
     };
@@ -149,14 +135,6 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
                                 quantity <= 0 || 
                                 quantity > (selectedSizeStock || 0) ||
                                 (selectedSizeStock || 0) <= 0;
-
-    // Debug: Log current state
-    console.log('Current state:', {
-        selectedSize,
-        selectedSizeStock,
-        sizeVariants: actualSizeVariants,
-        availableSizes
-    });
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -273,14 +251,11 @@ const ProductDetailModal = ({ product, onClose, addToCart, isAddingToCart, showN
                                         const sizeStock = parseInt(stock_quantity);
                                         const isAvailable = sizeStock > 0;
                                         
-                                        console.log(`Product ${product.id} - Size ${size}: stock=${sizeStock}, available=${isAvailable}`);
-                                        
                                         return (
                                             <button 
                                                 key={`${product.id}-${size}`}
                                                 type="button"
                                                 onClick={() => {
-                                                    console.log(`Clicked size: ${size} for product ${product.id}`);
                                                     if (isAvailable) {
                                                         handleSizeSelection(size);
                                                     }
